@@ -46,6 +46,23 @@ class FDLDataExtractor():
     COMA = 32767
     CAV_A = 1
     CAV_B = 2
+    NUM_OF_SIGNALS = 15
+    SIGNALS = [ 'IrvTet1',
+                'QrvTet1',
+                'IrvTet2',
+                'QrvTet2',
+                'IFwCirc',
+                'QFwCirc',
+                'IrvCirc',
+                'QrvCirc',
+                'IFwLoad',
+                'QFwLoad',
+                'IFwHybLoad',
+                'QFwHybLoad',
+                'IrvCav',
+                'QrvCav',
+                'AmpMO',
+              ]
 
     def __init__(self, filename):
         #with open(filename, 'rb') as fd:
@@ -61,20 +78,57 @@ class FDLDataExtractor():
         self._iterator_a = np.nditer(self._values_a)
         self._iterator_b = np.nditer(self._values_b)
 
-    def run(self):
-        self.find_next_comma(self._iterator_a)
-        self.find_next_comma(self._iterator_b)
+        #initialise dict of signals
+        self._signals = { self.CAV_A: {},
+                          self.CAV_B: {}
+                        }
+
+    def run(self, iterator, cavity):
+        while not iterator.finished:
+            index = self.find_next_comma(iterator)
+            self.add_values_from_index(index, cavity)
+
     
     def find_next_comma(self, iterator):
         """This method will search for the next comma in the data and will
             return the index value where its found.
         """
         while not iterator.value == self.COMA:
-            #print "index: %d, value: %d" %(iterator.iterindex, iterator.value)
-            #print "indexmulti: %s" %(self._iterator_a.multi_index)
             iterator.next()
         return iterator.iterindex
     
+    def add_values_from_index(self, index, cavity):
+        """ Add all the signals values starting from an index.
+        """
+        if cavity == self.CAV_A:
+            values = self._values_a
+        elif cavity == self.CAV_B:
+            values = self._values_b
+        else:
+            raise "Wrong CAVITY!"
+
+        for i,signal in enumerate(self.SIGNALS):
+            self._signals[cavity][signal] = values[index+i+1]
+        
+        #for signal in self.SIGNALS:
+        #    print 'Signal: %s, Value: %d' %(signal, self._signals[cavity][signal])
+        #print self._values_a
+    
+    def get_raw_value(self, signal, cavity):
+        """Method to return the list of values of one single signal.
+        """
+        return self._signals[cavity][signal]
+
+    def get_value(self, signal, cavity):
+        """Returns the value converted to the correct units.
+        """
+        value = self._signals[cavity][signal]
+        if value < 32768:
+            value = value / 32767 * 1000
+        else:
+            value = ((value - (2**16)) / 32767) * 10000
+        return value
+
     def get_indexes(self):
         indexes = np.where(self.read_values == self.comma)[1]
         return indexes

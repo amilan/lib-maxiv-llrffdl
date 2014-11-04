@@ -63,18 +63,44 @@ class FDLTest(unittest.TestCase):
         #__then:
         self.assertEqual(expected_b, received_b)
 
-    def test_extract_the_signals(self):
+    def test_add_values_cav_a_to_signals_dict(self):
         #__given:
-        expected = 4
+        expected = [4]
 
         #__when:
-        received = self.data_extractor.get_raw_value(self.SIGNAL)
+        index = self.data_extractor.find_next_comma(self.data_extractor._iterator_a)
+        self.data_extractor.add_values_from_index(index, self.CAV_A)
+        received = self.data_extractor.get_raw_value(self.SIGNAL, self.CAV_A)
 
         #__then:
         self.assertEqual(expected, received)
 
-#   def test_convert_signal(self):
-#       pass
+    def test_add_values_cav_b_to_signals_dict(self):
+        #__given:
+        expected = [-3]
+
+        #__when:
+        index = self.data_extractor.find_next_comma(self.data_extractor._iterator_b)
+        self.data_extractor.add_values_from_index(index, self.CAV_B)
+        received = self.data_extractor.get_raw_value(self.SIGNAL, self.CAV_B)
+
+        #__then:
+        self.assertEqual(expected, received)
+    
+    def test_convert_signal_minor_to_32768(self):
+        #__given:
+        expected = 4/32767*1000
+        
+        #__when:
+        index = self.data_extractor.find_next_comma(self.data_extractor._iterator_b)
+        self.data_extractor.add_values_from_index(index, self.CAV_A)
+        received = self.data_extractor.get_value(self.SIGNAL, self.CAV_A)
+
+        #__then:
+        self.assertEqual(expected, received)
+
+    def test_convert_all_signals():
+        pass
 
 #   def test_read_indexes_as_array(self):
 #       #__given:
