@@ -33,6 +33,7 @@ class FDLTest(unittest.TestCase):
     CAV_A = 1
     CAV_B = 2
     SIGNAL = 'IrvTet1'
+    FIRST_INDEX = 27
 
     def setUp(self):
 
@@ -43,7 +44,7 @@ class FDLTest(unittest.TestCase):
 
     def test_find_the_first_coma_in_a(self):
         #__given:
-        expected_a = 27 
+        expected_a = self.FIRST_INDEX
 
         #__when:
         #received_a = self.data_extractor.find_next_comma(self.CAV_A)
@@ -54,7 +55,7 @@ class FDLTest(unittest.TestCase):
 
     def test_find_the_first_comma_in_b(self):
         #__given:
-        expected_b = 27 
+        expected_b = self.FIRST_INDEX
         
         #__when:
         received_b = self.data_extractor.find_next_comma(self.data_extractor._iterator_b)
@@ -70,7 +71,7 @@ class FDLTest(unittest.TestCase):
         #__when:
         index = self.data_extractor.find_next_comma(self.data_extractor._iterator_a)
         self.data_extractor.add_values_from_index(index, self.CAV_A)
-        received = self.data_extractor.get_raw_value(self.SIGNAL, self.CAV_A)
+        received = self.data_extractor.get_raw_value(self.SIGNAL, self.CAV_A, 0)
 
         #__then:
         self.assertEqual(expected, received)
@@ -82,7 +83,7 @@ class FDLTest(unittest.TestCase):
         #__when:
         index = self.data_extractor.find_next_comma(self.data_extractor._iterator_b)
         self.data_extractor.add_values_from_index(index, self.CAV_B)
-        received = self.data_extractor.get_raw_value(self.SIGNAL, self.CAV_B)
+        received = self.data_extractor.get_raw_value(self.SIGNAL, self.CAV_B, 0)
 
         #__then:
         self.assertEqual(expected, received)
@@ -94,12 +95,60 @@ class FDLTest(unittest.TestCase):
         #__when:
         index = self.data_extractor.find_next_comma(self.data_extractor._iterator_b)
         self.data_extractor.add_values_from_index(index, self.CAV_A)
-        received = self.data_extractor.get_value(self.SIGNAL, self.CAV_A)
+        received = self.data_extractor.get_value(self.SIGNAL, self.CAV_A, 0)
 
         #__then:
         self.assertEqual(expected, received)
 
-    def test_convert_all_signals():
+    def test_convert_all_signals(self):
+        #__given:
+        
+        #__when:
+        self.data_extractor.extract_values()
+        #print self.data_extractor._raw_signals
+
+        #__then:
+        #if it arrives to this point, it deserves to pass
+        self.assertTrue(True)
+        #self.assertEqual(expected, received)
+
+    def test_index_dont_change(self):
+        #__given:
+        expected = self.FIRST_INDEX
+
+        #__when:
+        self.data_extractor.find_next_comma(self.data_extractor._iterator_a)
+        received = self.data_extractor.find_next_comma(self.data_extractor._iterator_a)
+        #received_b = self.data_extractor.find_next_comma(self.CAV_B)
+
+        #__then:
+        self.assertNotEqual(expected, received)
+
+    def test_index_has_been_changed(self):
+        #__given:
+        expected = 43
+
+        #__when:
+        received_1 = self.data_extractor.find_next_comma(self.data_extractor._iterator_a)
+        received = self.data_extractor.find_next_comma(self.data_extractor._iterator_a)
+        #received_b = self.data_extractor.find_next_comma(self.CAV_B)
+
+        #__then:
+        self.assertEqual(expected, received)
+
+    def test_acquisition_has_enough_values(self):
+        #__given:
+        expected = True
+
+        #__when:
+        received = self.data_extractor.acquisition_has_enough_values( self.data_extractor._values_a,
+                                                                      self.FIRST_INDEX
+                                                                    )
+        #__then:
+        self.assertEqual(expected, received)
+
+    def test_extract_signals_between_indexes(self):
+        #TODO: Extract signals between two indexes and without decimation
         pass
 
 #   def test_read_indexes_as_array(self):
